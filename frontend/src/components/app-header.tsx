@@ -105,7 +105,7 @@ export function AppHeader({ email, role }: Props) {
           >
             <span className="flex min-w-0 flex-col items-start text-left leading-tight">
               <span className="max-w-[220px] truncate text-xs font-normal text-muted-foreground">
-                {roleLabel(role)}
+                {roleLabel(role) ? roleLabel(role) === "secretaria" ? "/o" : roleLabel(role): "Admin"}
               </span>
               <span className="max-w-[220px] truncate">{email ?? "Usuario"}</span>
             </span>
