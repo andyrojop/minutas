@@ -137,7 +137,7 @@ export default async function MinuteEditorPage({ params, searchParams }: Props) 
       {firmaJustStarted ? (
         <div
           role="status"
-          className="border-emerald-500/25 bg-emerald-500/[0.06] text-foreground rounded-xl border px-4 py-3 text-sm shadow-xs"
+          className="border-success/30 bg-success/10 text-success-foreground rounded-xl border px-4 py-3 text-sm shadow-xs"
         >
           <p className="font-medium">Firma iniciada</p>
           <p className="text-muted-foreground mt-1 text-xs sm:text-sm">

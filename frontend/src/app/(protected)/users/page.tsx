@@ -48,7 +48,7 @@ export default async function UsersAdminPage({ searchParams }: Props) {
       </div>
 
       {sp.invited === "1" ? (
-        <p className="rounded-lg border border-green-600/30 bg-green-600/10 px-4 py-3 text-sm text-green-800 dark:text-green-400">
+        <p className="border-success/30 bg-success/10 text-success-foreground rounded-lg border px-4 py-3 text-sm">
           Usuario creado correctamente. Ya puede iniciar sesión con el correo y la contraseña definidos.
         </p>
       ) : null}
