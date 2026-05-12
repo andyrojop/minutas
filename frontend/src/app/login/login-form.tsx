@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
+import { signIn } from "next-auth/react";
 import { useState } from "react";
 
 import { buttonVariants } from "@/components/ui/button";
@@ -10,7 +11,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 import { isInviteOnlyMode } from "@/lib/env";
-import { createClient } from "@/lib/supabase/client";
 import { humanizeSupabaseAuthError } from "@/lib/supabase-auth-errors";
 import { resolveSafePostLoginRedirect } from "@/lib/post-login-redirect";
 
@@ -30,15 +30,16 @@ export function LoginForm() {
     setError(null);
     setLoading(true);
     try {
-      const supabase = createClient();
-      const { error: signError } = await supabase.auth.signInWithPassword({
+      const result = await signIn("credentials", {
         email,
         password,
+        redirect: false,
       });
-      if (signError) {
-        setError(humanizeSupabaseAuthError(signError.message));
+      if (!result || result.error) {
+        setError(humanizeSupabaseAuthError(result?.error ?? "Credenciales inválidas"));
         return;
       }
+
       router.push(nextPath);
       router.refresh();
     } catch (err) {

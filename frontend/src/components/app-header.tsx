@@ -20,7 +20,6 @@ import {
   roleLabel,
 } from "@/lib/roles";
 import { cn } from "@/lib/utils";
-import { createClient } from "@/lib/supabase/client";
 import { ChevronDown, LogOut } from "lucide-react";
 
 type Props = {
@@ -40,8 +39,8 @@ export function AppHeader({ email, role }: Props) {
   const pathname = usePathname();
 
   async function handleSignOut() {
-    const supabase = createClient();
-    await supabase.auth.signOut();
+    const { signOut } = await import("next-auth/react");
+    await signOut({ redirect: false });
     router.push("/login");
     router.refresh();
   }
