@@ -135,3 +135,76 @@
     text-rendering: optimizeLegibility;
   }
 }
+
+/* ── Auth pages ──────────────────────────────────────────── */
+@keyframes authFadeUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes authShake {
+  0%, 100% { transform: translateX(0); }
+  20%      { transform: translateX(-5px); }
+  40%      { transform: translateX(5px); }
+  60%      { transform: translateX(-3px); }
+  80%      { transform: translateX(3px); }
+}
+
+@keyframes authBlobFloat1 {
+  0%, 100% { transform: translate(0px, 0px) scale(1); }
+  30%      { transform: translate(-28px, 42px) scale(1.07); }
+  65%      { transform: translate(22px, -22px) scale(0.96); }
+}
+
+@keyframes authBlobFloat2 {
+  0%, 100% { transform: translate(0px, 0px) scale(1); }
+  40%      { transform: translate(48px, -36px) scale(1.1); }
+  72%      { transform: translate(-18px, 24px) scale(0.94); }
+}
+
+@keyframes authBlobFloat3 {
+  0%, 100% { transform: translate(0px, 0px) scale(1); }
+  50%      { transform: translate(-22px, -28px) scale(1.16); }
+}
+
+.auth-blob {
+  position: absolute;
+  border-radius: 9999px;
+  pointer-events: none;
+  filter: blur(55px);
+}
+
+.auth-blob-1 {
+  width: 380px;
+  height: 380px;
+  top: -100px;
+  right: -100px;
+  background: radial-gradient(circle at center, oklch(0.52 0.2 250 / 0.55) 0%, transparent 65%);
+  animation: authBlobFloat1 18s ease-in-out infinite;
+}
+
+.auth-blob-2 {
+  width: 300px;
+  height: 300px;
+  bottom: -80px;
+  left: -80px;
+  background: radial-gradient(circle at center, oklch(0.44 0.22 290 / 0.5) 0%, transparent 65%);
+  animation: authBlobFloat2 24s ease-in-out infinite;
+}
+
+.auth-blob-3 {
+  width: 240px;
+  height: 240px;
+  top: 38%;
+  left: 18%;
+  background: radial-gradient(circle at center, oklch(0.6 0.15 220 / 0.3) 0%, transparent 65%);
+  animation: authBlobFloat3 30s ease-in-out infinite;
+}
+
+.auth-page input:-webkit-autofill,
+.auth-page input:-webkit-autofill:hover,
+.auth-page input:-webkit-autofill:focus {
+  -webkit-box-shadow: 0 0 0 60px #0b0b18 inset !important;
+  -webkit-text-fill-color: rgba(255, 255, 255, 0.88) !important;
+  caret-color: rgba(255, 255, 255, 0.88);
+}
