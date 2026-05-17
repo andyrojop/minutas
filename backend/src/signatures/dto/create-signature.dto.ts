@@ -15,4 +15,9 @@ export class CreateSignatureDto {
   @IsOptional()
   @IsString()
   signature_png?: string | null;
+
+  @ApiPropertyOptional({ description: "Nombre de la persona que firma en el pad" })
+  @IsOptional()
+  @IsString()
+  signer_display_name?: string;
 }

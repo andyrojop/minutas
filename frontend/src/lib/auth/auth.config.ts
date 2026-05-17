@@ -1,16 +1,34 @@
 import type { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 
-import { getApiClient } from "@/lib/api/get-api-client";
+import { ApiError } from "@/lib/api/generated/core/ApiError";
 import type { TokenResponseDto } from "@/lib/api/generated/models/TokenResponseDto";
+import { getApiClient } from "@/lib/api/get-api-client";
+import { humanizeSupabaseAuthError } from "@/lib/supabase-auth-errors";
 import { REFRESH_MARGIN_SECONDS, SESSION_MAX_AGE_SECONDS } from "@/lib/constants";
 
-async function login(email: string, password: string): Promise<TokenResponseDto | null> {
+/**
+ * Si `authorize` lanza, NextAuth (v4) pone `error.message` en la query y con
+ * `signIn({ redirect: false })` el cliente recibe ese texto en `result.error`.
+ */
+async function login(email: string, password: string): Promise<TokenResponseDto> {
   try {
     return await getApiClient().auth.authControllerLogin({ email, password });
   } catch (e) {
     console.error("[auth] login failed", e);
-    return null;
+    if (e instanceof ApiError) {
+      const raw =
+        e.body != null &&
+        typeof e.body === "object" &&
+        "message" in e.body &&
+        typeof (e.body as { message: unknown }).message === "string"
+          ? (e.body as { message: string }).message
+          : e.message;
+      throw new Error(humanizeSupabaseAuthError(raw));
+    }
+    throw new Error(
+      humanizeSupabaseAuthError(e instanceof Error ? e.message : "Error inesperado al iniciar sesión."),
+    );
   }
 }
 
@@ -44,7 +62,26 @@ async function logout(refreshToken: string): Promise<void> {
   }
 }
 
+const isProd = process.env.NODE_ENV === "production";
+
 export const nextAuthOptions: NextAuthOptions = {
+  /** Sin esto estable, la cookie JWT puede fallar al descifrar (JWT_SESSION_ERROR). */
+  secret: process.env.NEXTAUTH_SECRET,
+  /**
+   * Nombre propio para no leer cookies legacy `next-auth.session-token` cifradas con otro
+   * NEXTAUTH_SECRET (o sin secret): evita JWEDecryptionFailed en cada arranque hasta que el usuario borre datos del sitio.
+   */
+  cookies: {
+    sessionToken: {
+      name: isProd ? "__Secure-app-minutes.session" : "app-minutes.session",
+      options: {
+        httpOnly: true,
+        sameSite: "lax",
+        path: "/",
+        secure: isProd,
+      },
+    },
+  },
   providers: [
     CredentialsProvider({
       name: "credentials",
@@ -55,7 +92,7 @@ export const nextAuthOptions: NextAuthOptions = {
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) return null;
         const response = await login(credentials.email, credentials.password);
-        if (!response?.accessToken || !response?.refreshToken) return null;
+        if (!response.accessToken || !response.refreshToken) return null;
         return {
           id: response.user.id,
           email: response.user.email,

@@ -23,7 +23,23 @@ export function isInviteOnlyMode(): boolean {
   return process.env.NEXT_PUBLIC_INVITE_ONLY?.trim() === "true";
 }
 
-/** Puerto COM numérico para SigWeb (p. ej. 9 → COM9). Por defecto 9. */
+/** Tipo de pad Topaz: HSB (USB HID, p. ej. T-S460-HSB-R) o BSB (puerto COM). */
+export type TopazTabletKind = "hsb" | "bsb";
+
+/**
+ * HSB = USB HID (TabletType 6, sin COM). BSB = serie/COM (TabletType 0, ServerTabletType 0).
+ * Usa `NEXT_PUBLIC_TOPAZ_TABLET_KIND` o detecta por `NEXT_PUBLIC_TOPAZ_MODEL` (si contiene "HSB").
+ */
+export function getTopazTabletKind(): TopazTabletKind {
+  const explicit = process.env.NEXT_PUBLIC_TOPAZ_TABLET_KIND?.trim().toLowerCase();
+  if (explicit === "hsb" || explicit === "bsb") return explicit;
+  const model = process.env.NEXT_PUBLIC_TOPAZ_MODEL?.trim().toUpperCase() ?? "";
+  if (model.includes("HSB")) return "hsb";
+  if (model.includes("BSB") || model.includes("BBSB")) return "bsb";
+  return "bsb";
+}
+
+/** Puerto COM numérico para SigWeb (p. ej. 9 → COM9). Por defecto 9. Solo aplica a pads BSB. */
 export function getTopazComPortNumber(): number {
   const raw = process.env.NEXT_PUBLIC_TOPAZ_COM_PORT?.trim();
   if (!raw) return 9;

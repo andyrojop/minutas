@@ -14,7 +14,15 @@ export type SignatureListRow = {
   signed_at: string;
   metadata: Record<string, unknown> | null;
   signer_email: string | null;
+  signer_display_name: string | null;
 };
+
+function readSignerDisplayName(metadata: Record<string, unknown> | null): string | null {
+  const raw = metadata?.signer_display_name;
+  if (typeof raw !== "string") return null;
+  const trimmed = raw.trim();
+  return trimmed.length > 0 ? trimmed : null;
+}
 
 @Injectable()
 export class SignaturesService {
@@ -58,11 +66,13 @@ export class SignaturesService {
       signed_at: r.signed_at instanceof Date ? r.signed_at.toISOString() : r.signed_at,
       metadata: r.metadata,
       signer_email: r.signer_email,
+      signer_display_name: readSignerDisplayName(r.metadata),
     }));
   }
 
   async create(signerId: string, dto: CreateSignatureDto, ip?: string | null) {
     const signedAt = new Date();
+    const displayName = dto.signer_display_name?.trim() || null;
     const inserted = await this.signatures.save(
       this.signatures.create({
         minute: { id: dto.minute_id } as never,
@@ -72,6 +82,7 @@ export class SignaturesService {
         metadata: {
           ip: ip ?? null,
           signed_at_server: signedAt.toISOString(),
+          signer_display_name: displayName,
         },
         signedAt,
       }),

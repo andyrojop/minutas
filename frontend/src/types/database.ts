@@ -55,6 +55,7 @@ export type SignatureRow = {
   signed_at: string;
   metadata: Record<string, unknown> | null;
   signer_email: string | null;
+  signer_display_name?: string | null;
 };
 
 export type AuditRow = {

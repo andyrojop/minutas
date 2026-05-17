@@ -27,6 +27,8 @@
   --color-input: var(--input);
   --color-border: var(--border);
   --color-destructive: var(--destructive);
+  --color-success: var(--success);
+  --color-success-foreground: var(--success-foreground);
   --color-accent-foreground: var(--accent-foreground);
   --color-accent: var(--accent);
   --color-muted-foreground: var(--muted-foreground);
@@ -55,7 +57,7 @@
   --card-foreground: oklch(0.145 0 0);
   --popover: oklch(1 0 0);
   --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
+  --primary: oklch(0.55 0.16 250);
   --primary-foreground: oklch(0.985 0 0);
   --secondary: oklch(0.97 0 0);
   --secondary-foreground: oklch(0.205 0 0);
@@ -64,9 +66,11 @@
   --accent: oklch(0.97 0 0);
   --accent-foreground: oklch(0.205 0 0);
   --destructive: oklch(0.577 0.245 27.325);
+  --success: oklch(0.62 0.14 150);
+  --success-foreground: oklch(0.985 0 0);
   --border: oklch(0.922 0 0);
   --input: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
+  --ring: oklch(0.55 0.16 250);
   --chart-1: oklch(0.87 0 0);
   --chart-2: oklch(0.556 0 0);
   --chart-3: oklch(0.439 0 0);
@@ -75,12 +79,12 @@
   --radius: 0.625rem;
   --sidebar: oklch(0.985 0 0);
   --sidebar-foreground: oklch(0.145 0 0);
-  --sidebar-primary: oklch(0.205 0 0);
+  --sidebar-primary: oklch(0.55 0.16 250);
   --sidebar-primary-foreground: oklch(0.985 0 0);
   --sidebar-accent: oklch(0.97 0 0);
   --sidebar-accent-foreground: oklch(0.205 0 0);
   --sidebar-border: oklch(0.922 0 0);
-  --sidebar-ring: oklch(0.708 0 0);
+  --sidebar-ring: oklch(0.55 0.16 250);
 }
 
 .dark {
@@ -90,7 +94,7 @@
   --card-foreground: oklch(0.985 0 0);
   --popover: oklch(0.205 0 0);
   --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.922 0 0);
+  --primary: oklch(0.7 0.14 250);
   --primary-foreground: oklch(0.205 0 0);
   --secondary: oklch(0.269 0 0);
   --secondary-foreground: oklch(0.985 0 0);
@@ -99,9 +103,11 @@
   --accent: oklch(0.269 0 0);
   --accent-foreground: oklch(0.985 0 0);
   --destructive: oklch(0.704 0.191 22.216);
+  --success: oklch(0.72 0.14 150);
+  --success-foreground: oklch(0.145 0 0);
   --border: oklch(1 0 0 / 10%);
   --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.556 0 0);
+  --ring: oklch(0.7 0.14 250);
   --chart-1: oklch(0.87 0 0);
   --chart-2: oklch(0.556 0 0);
   --chart-3: oklch(0.439 0 0);
@@ -109,12 +115,12 @@
   --chart-5: oklch(0.269 0 0);
   --sidebar: oklch(0.205 0 0);
   --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
+  --sidebar-primary: oklch(0.7 0.14 250);
   --sidebar-primary-foreground: oklch(0.985 0 0);
   --sidebar-accent: oklch(0.269 0 0);
   --sidebar-accent-foreground: oklch(0.985 0 0);
   --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.556 0 0);
+  --sidebar-ring: oklch(0.7 0.14 250);
 }
 
 @layer base {
@@ -128,4 +134,77 @@
     @apply font-sans;
     text-rendering: optimizeLegibility;
   }
+}
+
+/* ── Auth pages ──────────────────────────────────────────── */
+@keyframes authFadeUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes authShake {
+  0%, 100% { transform: translateX(0); }
+  20%      { transform: translateX(-5px); }
+  40%      { transform: translateX(5px); }
+  60%      { transform: translateX(-3px); }
+  80%      { transform: translateX(3px); }
+}
+
+@keyframes authBlobFloat1 {
+  0%, 100% { transform: translate(0px, 0px) scale(1); }
+  30%      { transform: translate(-28px, 42px) scale(1.07); }
+  65%      { transform: translate(22px, -22px) scale(0.96); }
+}
+
+@keyframes authBlobFloat2 {
+  0%, 100% { transform: translate(0px, 0px) scale(1); }
+  40%      { transform: translate(48px, -36px) scale(1.1); }
+  72%      { transform: translate(-18px, 24px) scale(0.94); }
+}
+
+@keyframes authBlobFloat3 {
+  0%, 100% { transform: translate(0px, 0px) scale(1); }
+  50%      { transform: translate(-22px, -28px) scale(1.16); }
+}
+
+.auth-blob {
+  position: absolute;
+  border-radius: 9999px;
+  pointer-events: none;
+  filter: blur(55px);
+}
+
+.auth-blob-1 {
+  width: 380px;
+  height: 380px;
+  top: -100px;
+  right: -100px;
+  background: radial-gradient(circle at center, oklch(0.52 0.2 250 / 0.55) 0%, transparent 65%);
+  animation: authBlobFloat1 18s ease-in-out infinite;
+}
+
+.auth-blob-2 {
+  width: 300px;
+  height: 300px;
+  bottom: -80px;
+  left: -80px;
+  background: radial-gradient(circle at center, oklch(0.44 0.22 290 / 0.5) 0%, transparent 65%);
+  animation: authBlobFloat2 24s ease-in-out infinite;
+}
+
+.auth-blob-3 {
+  width: 240px;
+  height: 240px;
+  top: 38%;
+  left: 18%;
+  background: radial-gradient(circle at center, oklch(0.6 0.15 220 / 0.3) 0%, transparent 65%);
+  animation: authBlobFloat3 30s ease-in-out infinite;
+}
+
+.auth-page input:-webkit-autofill,
+.auth-page input:-webkit-autofill:hover,
+.auth-page input:-webkit-autofill:focus {
+  -webkit-box-shadow: 0 0 0 60px #0b0b18 inset !important;
+  -webkit-text-fill-color: rgba(255, 255, 255, 0.88) !important;
+  caret-color: rgba(255, 255, 255, 0.88);
 }

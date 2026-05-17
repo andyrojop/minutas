@@ -9,7 +9,10 @@ export function getApiClient(
 ) {
   const token = session?.accessToken;
   const base =
-    baseUrl ?? process.env.NEXT_PUBLIC_API_BASE_URL?.trim() ?? "http://localhost:8000";
+    baseUrl ??
+    process.env.NEXT_PUBLIC_API_URL?.trim() ??
+    process.env.NEXT_PUBLIC_API_BASE_URL?.trim() ??
+    "http://localhost:3001";
   return new ApiClient({
     BASE: base,
     HEADERS: {

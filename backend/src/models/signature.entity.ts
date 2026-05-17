@@ -14,6 +14,7 @@ import { User } from "./user.entity";
 export interface SignatureMetadata {
   ip: string | null;
   signed_at_server: string;
+  signer_display_name?: string | null;
 }
 
 @Entity("signatures")

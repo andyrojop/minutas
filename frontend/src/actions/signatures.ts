@@ -22,11 +22,16 @@ export async function registerSignatureAction(formData: FormData) {
   const signature_svg =
     String(formData.get("signature_svg") ?? "").trim() ||
     "<svg xmlns='http://www.w3.org/2000/svg' width='1' height='1'/>";
+  const signer_display_name = String(formData.get("signer_display_name") ?? "").trim();
+  if (!signer_display_name) {
+    throw new Error("Indica el nombre de la persona que firmó.");
+  }
   try {
     const api = await getServerApiClient();
     await api.signatures.signaturesControllerCreate({
       minute_id,
       signature_svg,
+      signer_display_name,
     } as unknown as Parameters<typeof api.signatures.signaturesControllerCreate>[0]);
   } catch (e) {
     rethrowApiError(e);
