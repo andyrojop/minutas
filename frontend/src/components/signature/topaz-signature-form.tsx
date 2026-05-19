@@ -1,5 +1,6 @@
 "use client";
 
+import { CheckCircle2 } from "lucide-react";
 import { useCallback, useEffect, useRef, useState, useTransition } from "react";
 
 import { registerSignatureAction } from "@/actions/signatures";
@@ -40,9 +41,11 @@ export function TopazSignatureForm({ minuteId, fieldClass }: Props) {
   const [signerName, setSignerName] = useState("");
   const [sigwebHint, setSigwebHint] = useState<string | null>(null);
   const [pointCount, setPointCount] = useState<number | null>(null);
+  const [captureToast, setCaptureToast] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
   const scriptLoaded = useRef(false);
   const tabletTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const captureToastTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const scriptUrl = process.env.NEXT_PUBLIC_TOPAZ_SIGWEB_SCRIPT_URL?.trim();
   const tabletKind = getTopazTabletKind();
   const comHint = getTopazComPortName() ?? `COM${getTopazComPortNumber()}`;
@@ -61,9 +64,23 @@ export function TopazSignatureForm({ minuteId, fieldClass }: Props) {
     tabletTimerRef.current = null;
   }, []);
 
+  const showCaptureToast = useCallback((message: string) => {
+    if (captureToastTimerRef.current) {
+      clearTimeout(captureToastTimerRef.current);
+    }
+    setCaptureToast(message);
+    captureToastTimerRef.current = setTimeout(() => {
+      setCaptureToast(null);
+      captureToastTimerRef.current = null;
+    }, 3500);
+  }, []);
+
   useEffect(() => {
     return () => {
       stopTabletRefresh();
+      if (captureToastTimerRef.current) {
+        clearTimeout(captureToastTimerRef.current);
+      }
     };
   }, [stopTabletRefresh]);
 
@@ -112,6 +129,7 @@ export function TopazSignatureForm({ minuteId, fieldClass }: Props) {
         setSvg(captured);
         setSignerName("");
         setSigwebHint("Firma capturada. Escribe el nombre del firmante y pulsa «Confirmar firma».");
+        showCaptureToast("Trazo capturado correctamente.");
         stopTabletRefresh();
         return;
       }
@@ -119,7 +137,7 @@ export function TopazSignatureForm({ minuteId, fieldClass }: Props) {
         "No se pudo exportar la firma. Mantén el trazo visible en el lienzo y captura de nuevo sin pulsar «Archivar pad» antes.",
       );
     })();
-  }, [stopTabletRefresh]);
+  }, [showCaptureToast, stopTabletRefresh]);
 
   const startTablet = useCallback(() => {
     const w = getSigWebWindow();
@@ -300,8 +318,20 @@ export function TopazSignatureForm({ minuteId, fieldClass }: Props) {
       </div>
 
       {scriptUrl ? (
-        <div className="border-muted-foreground/30 overflow-hidden rounded-lg border bg-white">
-          <canvas id={SIGWEB_CANVAS_ID} width="500" height="200" className="block max-w-full" />
+        <div className="relative">
+          {captureToast ? (
+            <div
+              role="status"
+              aria-live="polite"
+              className="pointer-events-none absolute -top-3 right-3 z-10 flex items-center gap-2 rounded-md border border-green-200 bg-green-50 px-3 py-1.5 text-xs font-medium text-green-700 shadow-sm dark:border-green-900/60 dark:bg-green-950/80 dark:text-green-300"
+            >
+              <CheckCircle2 className="h-4 w-4" aria-hidden />
+              {captureToast}
+            </div>
+          ) : null}
+          <div className="border-muted-foreground/30 overflow-hidden rounded-lg border bg-white">
+            <canvas id={SIGWEB_CANVAS_ID} width="500" height="200" className="block max-w-full" />
+          </div>
         </div>
       ) : (
         <p className="text-muted-foreground text-xs">
