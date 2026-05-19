@@ -283,7 +283,7 @@ export default async function MinuteEditorPage({ params, searchParams }: Props) 
                   <textarea id="description" name="description" required rows={2} className={fieldClass} />
                 </div>
                 <div className="space-y-1">
-                  <Label htmlFor="assignee_id">Responsable</Label>
+                  <Label htmlFor="assignee_id">Responsable del compromiso</Label>
                   <select
                     id="assignee_id"
                     name="assignee_id"
@@ -293,7 +293,7 @@ export default async function MinuteEditorPage({ params, searchParams }: Props) 
                     defaultValue=""
                   >
                     <option value="" disabled>
-                      Selecciona…
+                      Selecciona al encargado…
                     </option>
                     {usersList.map((u) => (
                       <option key={u.id} value={u.id}>
@@ -301,6 +301,9 @@ export default async function MinuteEditorPage({ params, searchParams }: Props) 
                       </option>
                     ))}
                   </select>
+                  <p className="text-muted-foreground text-xs">
+                    Persona que se encargará de cumplir esta tarea (no la secretaria que redacta la minuta).
+                  </p>
                 </div>
                 <div className="space-y-1">
                   <Label htmlFor="due_date">Fecha límite</Label>
