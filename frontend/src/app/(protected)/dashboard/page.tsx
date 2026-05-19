@@ -33,8 +33,7 @@ export default async function DashboardPage() {
       <div className="space-y-1">
         <h1 className="text-2xl font-semibold tracking-tight">Inicio</h1>
         <p className="text-muted-foreground max-w-2xl text-sm leading-relaxed">
-          Accesos según tu rol: administración (usuarios, auditoría, ajustes) o secretaría (reuniones, minutas,
-          compromisos y firma).
+          Reuniones, minutas, compromisos y firma.
         </p>
       </div>
 
@@ -46,11 +45,11 @@ export default async function DashboardPage() {
           </CardHeader>
           <CardContent className="space-y-1 text-sm">
             <p>
-              <span className="text-muted-foreground">Correo </span>
+              <span className="text-muted-foreground">Correo: </span>
               <span className="font-medium">{profile?.email ?? session.user.email ?? "—"}</span>
             </p>
             <p>
-              <span className="text-muted-foreground">Rol </span>
+              <span className="text-muted-foreground">Rol: </span>
               <span className="font-medium">{roleLabel(role)}</span>
             </p>
           </CardContent>
