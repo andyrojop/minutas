@@ -5,19 +5,21 @@ import { useState, useTransition } from "react";
 import { patchCommitmentAction } from "@/actions/commitments";
 import { buttonVariants } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
+import {
+  COMMITMENT_STATUSES,
+  type CommitmentStatus,
+  commitmentStatusLabel,
+} from "@/lib/commitments";
 import { cn } from "@/lib/utils";
-
-const STATUSES = ["pendiente", "en_progreso", "cumplido", "vencido"] as const;
-type Status = (typeof STATUSES)[number];
 
 type Props = {
   commitmentId: string;
-  initialStatus: Status;
+  initialStatus: CommitmentStatus;
 };
 
 export function CommitmentStatusForm({ commitmentId, initialStatus }: Props) {
-  const [status, setStatus] = useState<Status>(initialStatus);
-  const [savedStatus, setSavedStatus] = useState<Status>(initialStatus);
+  const [status, setStatus] = useState<CommitmentStatus>(initialStatus);
+  const [savedStatus, setSavedStatus] = useState<CommitmentStatus>(initialStatus);
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
   const [justSaved, setJustSaved] = useState(false);
@@ -51,13 +53,13 @@ export function CommitmentStatusForm({ commitmentId, initialStatus }: Props) {
           id={`st-${commitmentId}`}
           name="status"
           value={status}
-          onChange={(e) => setStatus(e.target.value as Status)}
+          onChange={(e) => setStatus(e.target.value as CommitmentStatus)}
           disabled={isPending}
           className="border-input bg-background h-9 rounded-lg border px-3 text-sm"
         >
-          {STATUSES.map((s) => (
+          {COMMITMENT_STATUSES.map((s) => (
             <option key={s} value={s}>
-              {s.replace("_", " ")}
+              {commitmentStatusLabel(s)}
             </option>
           ))}
         </select>

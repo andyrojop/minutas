@@ -9,16 +9,10 @@ import {
 } from "@/components/ui/card";
 import { CommitmentStatusForm } from "@/components/commitments/commitment-status-form";
 import { listMyCommitments } from "@/actions/commitments";
+import { asCommitmentStatus } from "@/lib/commitments";
 import { getMyRole } from "@/lib/session-role";
 import { canSeeMyCommitmentsNav } from "@/lib/roles";
 import type { CommitmentRow } from "@/types/database";
-
-const STATUSES = ["pendiente", "en_progreso", "cumplido", "vencido"] as const;
-type Status = (typeof STATUSES)[number];
-
-function asStatus(value: string | null | undefined): Status {
-  return (STATUSES as readonly string[]).includes(value ?? "") ? (value as Status) : "pendiente";
-}
 
 export default async function MyCommitmentsPage() {
   const role = await getMyRole();
@@ -65,7 +59,7 @@ export default async function MyCommitmentsPage() {
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <CommitmentStatusForm commitmentId={c.id} initialStatus={asStatus(c.status)} />
+                  <CommitmentStatusForm commitmentId={c.id} initialStatus={asCommitmentStatus(c.status)} />
                 </CardContent>
               </Card>
             </li>

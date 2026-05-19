@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/card";
 import { listCommitments } from "@/actions/commitments";
 import { API_CONNECTION_FAILED_MESSAGE } from "@/lib/api/errors";
+import { commitmentStatusLabel } from "@/lib/commitments";
 import { getMyRole } from "@/lib/session-role";
 import { canSecretaryOperate } from "@/lib/roles";
 import type { CommitmentRow } from "@/types/database";
@@ -68,7 +69,7 @@ export default async function CommitmentsPage() {
                   <tr key={c.id} className="border-b border-border/60">
                     <td className="py-2 pr-3 align-top">{c.description ?? "—"}</td>
                     <td className="py-2 pr-3 align-top">
-                      <Badge variant="secondary">{c.status ?? "—"}</Badge>
+                      <Badge variant="secondary">{commitmentStatusLabel(c.status)}</Badge>
                     </td>
                     <td className="py-2 pr-3 align-top">{c.priority ?? "—"}</td>
                     <td className="py-2 pr-3 align-top whitespace-nowrap">

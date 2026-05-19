@@ -19,6 +19,7 @@ import { listSignaturesByMinute } from "@/actions/signatures";
 import { listUsers } from "@/actions/users";
 import { SignaturesGallery } from "@/components/signature/signatures-gallery";
 import { TopazSignatureForm } from "@/components/signature/topaz-signature-form";
+import { commitmentStatusLabel } from "@/lib/commitments";
 import { getMyRole } from "@/lib/session-role";
 import { canSecretaryOperate, canSign } from "@/lib/roles";
 import type { MeetingRow, MinuteRow, UserRow } from "@/types/database";
@@ -258,7 +259,7 @@ export default async function MinuteEditorPage({ params, searchParams }: Props) 
                     <span className="font-medium">{c.description ?? "—"}</span>
                     <span className="text-muted-foreground">
                       {" "}
-                      · {c.status ?? "—"} · Responsable: {assigneeLabel(c.assignee_id)}
+                      · {commitmentStatusLabel(c.status)} · Responsable: {assigneeLabel(c.assignee_id)}
                       {c.due_date
                         ? ` · Vence ${new Date(c.due_date).toLocaleDateString("es-GT")}`
                         : null}
