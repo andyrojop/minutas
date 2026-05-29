@@ -9,7 +9,7 @@ import {
 } from "@/components/ui/card";
 import { CommitmentStatusForm } from "@/components/commitments/commitment-status-form";
 import { listMyCommitments } from "@/actions/commitments";
-import { asCommitmentStatus } from "@/lib/commitments";
+import { asCommitmentStatus, priorityLabel } from "@/lib/commitments";
 import { getMyRole } from "@/lib/session-role";
 import { canSeeMyCommitmentsNav } from "@/lib/roles";
 import type { CommitmentRow } from "@/types/database";
@@ -55,7 +55,7 @@ export default async function MyCommitmentsPage() {
                     {c.due_date
                       ? new Date(c.due_date).toLocaleDateString("es-GT", { dateStyle: "long" })
                       : "Sin fecha"}
-                    {c.priority ? ` · Prioridad: ${c.priority}` : null}
+                    {c.priority ? ` · Prioridad: ${priorityLabel(c.priority)}` : null}
                   </CardDescription>
                 </CardHeader>
                 <CardContent>

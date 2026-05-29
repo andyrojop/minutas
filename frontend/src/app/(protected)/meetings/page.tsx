@@ -2,6 +2,7 @@ import Link from "next/link";
 
 import { ApiConnectionHint } from "@/components/api-connection-hint";
 import { Badge } from "@/components/ui/badge";
+import { meetingStatusLabel } from "@/lib/meetings";
 import { buttonVariants } from "@/components/ui/button";
 import {
   Card,
@@ -66,7 +67,7 @@ export default async function MeetingsPage() {
                         {m.agenda || "Sin agenda"}
                       </CardDescription>
                     </div>
-                    <Badge variant="secondary">{m.status}</Badge>
+                    <Badge variant="secondary">{meetingStatusLabel(m.status)}</Badge>
                   </CardHeader>
                   <CardContent className="text-muted-foreground flex flex-wrap gap-x-4 gap-y-1 text-xs">
                     {m.scheduled_at ? (

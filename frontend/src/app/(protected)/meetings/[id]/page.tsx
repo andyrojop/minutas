@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
+import { meetingStatusLabel, minuteStatusLabel } from "@/lib/meetings";
 import {
   cancelMeetingAction,
   deleteMeetingAction,
@@ -80,7 +81,7 @@ export default async function MeetingDetailPage({ params, searchParams }: Props)
               </span>
             ) : null}
             {m.location ? <span>{m.location}</span> : null}
-            <Badge variant="outline">{m.status}</Badge>
+            <Badge variant="outline">{meetingStatusLabel(m.status)}</Badge>
           </div>
         </div>
         <div className="flex flex-wrap gap-2">
@@ -194,7 +195,7 @@ export default async function MeetingDetailPage({ params, searchParams }: Props)
                       <CardTitle className="text-sm font-medium">
                         Minuta · versión {min.version}
                       </CardTitle>
-                      <Badge variant="secondary">{min.status}</Badge>
+                      <Badge variant="secondary">{minuteStatusLabel(min.status)}</Badge>
                     </CardHeader>
                     <CardContent className="text-muted-foreground text-xs">
                       Creada{" "}

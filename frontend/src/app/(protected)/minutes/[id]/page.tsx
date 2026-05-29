@@ -10,6 +10,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { minuteStatusLabel } from "@/lib/meetings";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 import { listCommitments, createCommitmentAction } from "@/actions/commitments";
@@ -133,7 +134,7 @@ export default async function MinuteEditorPage({ params, searchParams }: Props) 
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="flex flex-wrap items-center gap-3">
             <h1 className="text-2xl font-semibold tracking-tight">Minuta</h1>
-            <Badge variant="outline">{min.status}</Badge>
+            <Badge variant="outline">{minuteStatusLabel(min.status)}</Badge>
           </div>
           <ExportMinutePdfButton minuteId={id} />
         </div>
