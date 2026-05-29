@@ -15,10 +15,11 @@ import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 import { listCommitments, createCommitmentAction } from "@/actions/commitments";
 import { getMeeting } from "@/actions/meetings";
-import { getMinute, startMinuteSigningAction, updateMinuteDraftAction } from "@/actions/minutes";
+import { getMinute, startMinuteSigningAction } from "@/actions/minutes";
 import { listSignaturesByMinute } from "@/actions/signatures";
 import { listUsers } from "@/actions/users";
 import { ExportMinutePdfButton } from "@/components/minutes/export-minute-pdf-button";
+import { MinuteDraftForm } from "@/components/minutes/minute-draft-form";
 import { SignaturesGallery } from "@/components/signature/signatures-gallery";
 import { TopazSignatureForm } from "@/components/signature/topaz-signature-form";
 import { commitmentStatusLabel } from "@/lib/commitments";
@@ -191,40 +192,11 @@ export default async function MinuteEditorPage({ params, searchParams }: Props) 
             <CardDescription>Guarda cuando termines de escribir.</CardDescription>
           </CardHeader>
           <CardContent>
-            <form key={draftFormKey} action={updateMinuteDraftAction} className="space-y-4">
-              <input type="hidden" name="minute_id" value={id} />
-              <div className="space-y-2">
-                <Label htmlFor="agenda">Agenda</Label>
-                <textarea id="agenda" name="agenda" rows={4} defaultValue={agenda} className={fieldClass} />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="desarrollo">Desarrollo</Label>
-                <textarea
-                  id="desarrollo"
-                  name="desarrollo"
-                  rows={6}
-                  defaultValue={desarrollo}
-                  className={fieldClass}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="acuerdos">Acuerdos</Label>
-                <textarea id="acuerdos" name="acuerdos" rows={4} defaultValue={acuerdos} className={fieldClass} />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="observaciones">Observaciones</Label>
-                <textarea
-                  id="observaciones"
-                  name="observaciones"
-                  rows={3}
-                  defaultValue={observaciones}
-                  className={fieldClass}
-                />
-              </div>
-              <button type="submit" className={cn(buttonVariants())}>
-                Guardar borrador
-              </button>
-            </form>
+            <MinuteDraftForm
+              minuteId={id}
+              formKey={draftFormKey}
+              defaultValues={{ agenda, desarrollo, acuerdos, observaciones }}
+            />
           </CardContent>
         </Card>
       ) : null}
