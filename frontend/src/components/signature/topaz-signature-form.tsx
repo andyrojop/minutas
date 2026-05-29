@@ -1,6 +1,7 @@
 "use client";
 
 import { CheckCircle2 } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState, useTransition } from "react";
 
 import { registerSignatureAction } from "@/actions/signatures";
@@ -31,6 +32,7 @@ type Props = {
 };
 
 export function TopazSignatureForm({ minuteId, fieldClass }: Props) {
+  const router = useRouter();
   const [svg, setSvg] = useState("");
   const [signerName, setSignerName] = useState("");
   const [status, setStatus] = useState<string | null>(null);
@@ -199,6 +201,7 @@ export function TopazSignatureForm({ minuteId, fieldClass }: Props) {
         await registerSignatureAction(formData);
         clearPad();
         setStatus("Firma guardada.");
+        router.refresh();
       } catch (err) {
         setStatus(err instanceof Error ? err.message : "No se pudo guardar la firma.");
       }

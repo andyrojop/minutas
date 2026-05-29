@@ -1,24 +1,41 @@
 import PDFDocument from "pdfkit";
 import type PDFKit from "pdfkit";
 
-import { extractPngBufferFromSignatureSvg } from "@/lib/minute-pdf/extract-signature-png";
+import { extractSignaturePng } from "@/lib/minute-pdf/extract-signature-png";
 import type { MinutePdfInput } from "@/lib/minute-pdf/types";
 import type { SignatureRow } from "@/types/database";
 
-const MARGIN = 40;
+const MARGIN = 44;
 const PAGE_W = 612;
 const CONTENT_W = PAGE_W - MARGIN * 2;
-const BODY_FONT = 10;
-const SMALL_FONT = 9;
-const TITLE_FONT = 11;
-const HEADER_FONT = 12;
+
+const FONT_DISPLAY = 13;
+const FONT_SECTION = 9.5;
+const FONT_BODY = 9.5;
+const FONT_SMALL = 8.5;
+const FONT_TINY = 7.5;
+
+const C_NAVY = "#1B3A6B";
+const C_GOLD = "#B8942A";
+const C_WHITE = "#FFFFFF";
+const C_BODY = "#1A1A1A";
+const C_MUTED = "#5C6575";
+const C_BORDER = "#AABBCC";
+const C_ROW = "#EFF2F8";
 
 const ORG_LINE_1 = "Gobierno de la República de Guatemala";
 const ORG_LINE_2 = "Ministerio de Gobernación";
-const UNIT_NAME =
-  "SUBDIRECCIÓN GENERAL DE TECNOLOGÍAS DE LA INFORMACIÓN Y LA COMUNICACIÓN.";
-const CLOSING =
-  "Reiterando mis muestras de subordinación y respeto.";
+const UNIT_NAME = "SUBDIRECCIÓN GENERAL DE TECNOLOGÍAS\nDE LA INFORMACIÓN Y LA COMUNICACIÓN";
+const CLOSING = "Reiterando mis muestras de subordinación y respeto.";
+
+const STATUS_ES: Record<string, string> = {
+  en_progreso: "En Progreso",
+  cumplido: "Cumplido",
+  pendiente: "Pendiente",
+  completado: "Completado",
+  cancelado: "Cancelado",
+  en_revision: "En Revisión",
+};
 
 function signerLabel(sig: SignatureRow): string {
   return (
@@ -51,98 +68,131 @@ function minuteDocumentNumber(minuteId: string, createdAt: string | null): strin
   return `No. ${short}-${year}`;
 }
 
-function drawSection(
-  doc: PDFKit.PDFDocument,
-  title: string,
-  body: string,
-  y: number,
-): number {
+function statusEs(raw: string): string {
+  return STATUS_ES[raw.toLowerCase().replace(/\s+/g, "_")] ?? raw;
+}
+
+function drawSection(doc: PDFKit.PDFDocument, title: string, body: string, y: number): number {
   const x = MARGIN;
   const w = CONTENT_W;
-  const headerH = 22;
-  const pad = 8;
+  const headerH = 20;
+  const pad = 10;
+  const text = body || "—";
 
-  doc.rect(x, y, w, headerH).stroke();
+  // Navy header bar with white bold title
+  doc.fillColor(C_NAVY).rect(x, y, w, headerH).fill();
   doc
+    .fillColor(C_WHITE)
     .font("Helvetica-Bold")
-    .fontSize(TITLE_FONT)
-    .text(title, x, y + 6, { width: w, align: "center" });
+    .fontSize(FONT_SECTION)
+    .text(title, x, y + 5.5, { width: w, align: "center" });
 
   y += headerH;
-  doc.font("Helvetica").fontSize(BODY_FONT);
-  const bodyHeight = doc.heightOfString(body || "—", { width: w - pad * 2 });
-  const boxH = Math.max(bodyHeight + pad * 2, 36);
 
-  doc.rect(x, y, w, boxH).stroke();
-  doc.text(body || "—", x + pad, y + pad, { width: w - pad * 2, align: "left" });
+  // Body: measure height, draw bordered box, render text
+  doc.fillColor(C_BODY).font("Helvetica").fontSize(FONT_BODY);
+  const bodyH = doc.heightOfString(text, { width: w - pad * 2 });
+  const boxH = Math.max(bodyH + pad * 2, 38);
+
+  doc.strokeColor(C_BORDER).rect(x, y, w, boxH).stroke();
+  doc.fillColor(C_BODY).text(text, x + pad, y + pad, { width: w - pad * 2 });
+
   return y + boxH + 10;
 }
 
 function drawHeader(doc: PDFKit.PDFDocument, data: MinutePdfInput, y: number): number {
   const x = MARGIN;
   const w = CONTENT_W;
-  const h = 88;
-  const colW = w / 3;
+  const h = 80;
+  const c1 = Math.floor(w * 0.30);
+  const c2 = Math.floor(w * 0.46);
+  const c3 = w - c1 - c2;
 
-  doc.rect(x, y, w, h).stroke();
+  // Outer border + column dividers
+  doc.strokeColor(C_BORDER).lineWidth(1).rect(x, y, w, h).stroke();
+  doc.strokeColor(C_BORDER)
+    .moveTo(x + c1, y).lineTo(x + c1, y + h).stroke()
+    .moveTo(x + c1 + c2, y).lineTo(x + c1 + c2, y + h).stroke();
 
-  doc
-    .font("Helvetica-Bold")
-    .fontSize(SMALL_FONT)
-    .text(ORG_LINE_1, x + 6, y + 10, { width: colW - 12 })
-    .font("Helvetica")
-    .text(ORG_LINE_2, x + 6, y + 24, { width: colW - 12 });
+  // Left column: let ORG_LINE_1 wrap naturally, then position ORG_LINE_2 below it
+  doc.fillColor(C_NAVY).font("Helvetica-Bold").fontSize(7)
+    .text(ORG_LINE_1, x + 8, y + 12, { width: c1 - 16 });
+  doc.fillColor(C_MUTED).font("Helvetica").fontSize(7)
+    .text(ORG_LINE_2, x + 8, doc.y + 2, { width: c1 - 16 });
 
+  // Center column: document title and number
   const docNo = minuteDocumentNumber(data.minute.id, data.minute.created_at);
-  doc
-    .font("Helvetica-Bold")
-    .fontSize(HEADER_FONT)
-    .text("MINUTA DE REUNIÓN", x + colW, y + 14, { width: colW, align: "center" })
-    .fontSize(TITLE_FONT)
-    .text(docNo, x + colW, y + 30, { width: colW, align: "center" })
-    .font("Helvetica")
-    .fontSize(7.5)
-    .text(UNIT_NAME, x + colW, y + 46, { width: colW, align: "center" });
+  doc.fillColor(C_NAVY).font("Helvetica-Bold").fontSize(FONT_DISPLAY)
+    .text("MINUTA DE REUNIÓN", x + c1, y + 12, { width: c2, align: "center" });
+  doc.fillColor(C_NAVY).font("Helvetica-Bold").fontSize(FONT_SECTION)
+    .text(docNo, x + c1, y + 30, { width: c2, align: "center" });
+  doc.fillColor(C_MUTED).font("Helvetica").fontSize(FONT_TINY)
+    .text(UNIT_NAME, x + c1, y + 48, { width: c2, align: "center" });
 
-  doc
-    .font("Helvetica")
-    .fontSize(SMALL_FONT)
-    .text(`Folio ${String(data.minute.version).padStart(2, "0")}`, x + colW * 2 + 6, y + 12, {
-      width: colW - 12,
+  // Right column: folio + unit acronym
+  doc.fillColor(C_MUTED).font("Helvetica").fontSize(FONT_SMALL)
+    .text(`Folio ${String(data.minute.version ?? 1).padStart(2, "0")}`, x + c1 + c2 + 6, y + 12, {
+      width: c3 - 12,
       align: "right",
-    })
-    .font("Helvetica-Bold")
-    .text("SGTIC", x + colW * 2 + 6, y + 52, { width: colW - 12, align: "right" });
+    });
+  doc.fillColor(C_NAVY).font("Helvetica-Bold").fontSize(11)
+    .text("SGTIC", x + c1 + c2 + 6, y + 56, { width: c3 - 12, align: "right" });
 
-  return y + h + 8;
+  // Gold accent line at bottom of header
+  y += h;
+  doc.strokeColor(C_GOLD).lineWidth(2).moveTo(x, y).lineTo(x + w, y).stroke();
+  doc.lineWidth(1).strokeColor(C_BORDER);
+
+  return y + 10;
 }
 
 function drawMetaGrid(doc: PDFKit.PDFDocument, data: MinutePdfInput, y: number): number {
   const x = MARGIN;
   const w = CONTENT_W;
-  const rowH = 28;
+  const rowH = 36;
   const half = w / 2;
+  const pad = 8;
+  const labelW = 100;
   const content = (data.minute.content ?? {}) as Record<string, unknown>;
-  const tipoEvento = String(content.tipo_evento ?? "Técnica de trabajo").trim() || "Técnica de trabajo";
+  const tipoEvento =
+    String(content.tipo_evento ?? "Técnica de trabajo").trim() || "Técnica de trabajo";
   const meeting = data.meeting;
-
-  doc.rect(x, y, w, rowH).stroke();
-  doc.rect(x, y, half, rowH).stroke();
-  doc
-    .font("Helvetica")
-    .fontSize(BODY_FONT)
-    .text(`Tipo de Evento: ${tipoEvento}`, x + 8, y + 9, { width: half - 16 });
-
   const fecha = formatMeetingDateTime(meeting?.scheduled_at ?? null);
-  doc.text(`Fecha y Hora: Guatemala, ${fecha}`, x + half + 8, y + 9, { width: half - 16 });
 
+  const drawMetaRow = (
+    ll: string, lv: string,
+    rl: string, rv: string,
+    ry: number, alt: boolean,
+  ) => {
+    if (alt) doc.fillColor(C_ROW).rect(x, ry, w, rowH).fill();
+    doc.strokeColor(C_BORDER).rect(x, ry, w, rowH).stroke();
+    doc.moveTo(x + half, ry).lineTo(x + half, ry + rowH).stroke();
+
+    const ty = ry + 13;
+
+    // Left cell: bold label then regular value
+    doc.fillColor(C_NAVY).font("Helvetica-Bold").fontSize(FONT_SMALL)
+      .text(ll + ":", x + pad, ty, { width: labelW, lineBreak: false });
+    doc.fillColor(C_BODY).font("Helvetica").fontSize(FONT_SMALL)
+      .text(lv, x + pad + labelW, ty, { width: half - pad * 2 - labelW });
+
+    // Right cell: bold label then regular value
+    doc.fillColor(C_NAVY).font("Helvetica-Bold").fontSize(FONT_SMALL)
+      .text(rl + ":", x + half + pad, ty, { width: labelW, lineBreak: false });
+    doc.fillColor(C_BODY).font("Helvetica").fontSize(FONT_SMALL)
+      .text(rv, x + half + pad + labelW, ty, { width: half - pad * 2 - labelW });
+  };
+
+  drawMetaRow("Tipo de Evento", tipoEvento, "Fecha y Hora", fecha, y, false);
   y += rowH;
-  doc.rect(x, y, w, rowH).stroke();
-  doc.rect(x, y, half, rowH).stroke();
-  doc.text(`Nombre del Evento: ${meeting?.title?.trim() || "—"}`, x + 8, y + 9, { width: half - 16 });
-  doc.text(`Lugar: ${meeting?.location?.trim() || "—"}`, x + half + 8, y + 9, { width: half - 16 });
+  drawMetaRow(
+    "Nombre del Evento", meeting?.title?.trim() || "—",
+    "Lugar", meeting?.location?.trim() || "—",
+    y, true,
+  );
+  y += rowH;
 
-  return y + rowH + 10;
+  return y + 10;
 }
 
 function buildAcuerdosText(data: MinutePdfInput): string {
@@ -154,7 +204,7 @@ function buildAcuerdosText(data: MinutePdfInput): string {
     const bullets = data.commitments
       .map((c) => {
         const desc = c.description?.trim() || "Compromiso";
-        const status = c.status ? ` (${c.status})` : "";
+        const status = c.status ? `  [${statusEs(c.status)}]` : "";
         return `• ${desc}${status}`;
       })
       .join("\n");
@@ -165,18 +215,18 @@ function buildAcuerdosText(data: MinutePdfInput): string {
 
 function drawSignatures(
   doc: PDFKit.PDFDocument,
-  signatures: SignatureRow[],
+  entries: Array<{ sig: SignatureRow; png: Buffer | null }>,
   startY: number,
 ): number {
-  if (signatures.length === 0) return startY;
+  if (entries.length === 0) return startY;
 
   const x = MARGIN;
   const w = CONTENT_W;
   const cols = 3;
   const colW = w / cols;
-  const sigImgW = Math.min(colW - 24, 140);
+  const sigImgW = Math.min(colW - 32, 128);
   const sigImgH = 48;
-  const rowBlockH = sigImgH + 36;
+  const rowBlockH = sigImgH + 56;
 
   let rowY = startY;
   let col = 0;
@@ -188,34 +238,27 @@ function drawSignatures(
     }
   };
 
-  for (const sig of signatures) {
+  for (const { sig, png } of entries) {
     if (col === 0) ensureRowFits();
 
     const cellX = x + col * colW;
     const centerX = cellX + colW / 2;
     const name = signerLabel(sig);
-    const png = extractPngBufferFromSignatureSvg(sig.signature_svg);
 
     if (png) {
       try {
         doc.image(png, centerX - sigImgW / 2, rowY, { fit: [sigImgW, sigImgH] });
-      } catch {
-        doc
-          .moveTo(cellX + 16, rowY + sigImgH / 2)
-          .lineTo(cellX + colW - 16, rowY + sigImgH / 2)
-          .stroke();
-      }
-    } else {
-      doc
-        .moveTo(cellX + 16, rowY + sigImgH / 2)
-        .lineTo(cellX + colW - 16, rowY + sigImgH / 2)
-        .stroke();
+      } catch { /* fall through to blank space */ }
     }
 
-    doc
-      .font("Helvetica")
-      .fontSize(SMALL_FONT)
-      .text(name, cellX + 8, rowY + sigImgH + 8, { width: colW - 16, align: "center" });
+    // Single underline beneath signature/image area
+    doc.strokeColor(C_NAVY)
+      .moveTo(cellX + 20, rowY + sigImgH + 4)
+      .lineTo(cellX + colW - 20, rowY + sigImgH + 4)
+      .stroke();
+
+    doc.fillColor(C_BODY).font("Helvetica-Bold").fontSize(FONT_SMALL)
+      .text(name, cellX + 6, rowY + sigImgH + 14, { width: colW - 12, align: "center" });
 
     col += 1;
     if (col >= cols) {
@@ -228,7 +271,15 @@ function drawSignatures(
   return rowY + 8;
 }
 
-export function buildMinutePdfBuffer(data: MinutePdfInput): Promise<Buffer> {
+export async function buildMinutePdfBuffer(data: MinutePdfInput): Promise<Buffer> {
+  // Pre-resolve all signature images before opening the PDF stream
+  const signatureEntries = await Promise.all(
+    data.signatures.map(async (sig) => ({
+      sig,
+      png: await extractSignaturePng(sig.signature_svg),
+    })),
+  );
+
   return new Promise((resolve, reject) => {
     const doc = new PDFDocument({ size: "LETTER", margin: MARGIN, autoFirstPage: true });
     const chunks: Buffer[] = [];
@@ -243,14 +294,14 @@ export function buildMinutePdfBuffer(data: MinutePdfInput): Promise<Buffer> {
     const observaciones = String(content.observaciones ?? "").trim();
     const participantes =
       data.participantLabels.length > 0
-        ? data.participantLabels.join(", ")
+        ? data.participantLabels.map((p) => `• ${p}`).join("\n")
         : "—";
 
     let y = MARGIN;
 
     y = drawHeader(doc, data, y);
     y = drawMetaGrid(doc, data, y);
-    y = drawSection(doc, "PARTICIPANTES", `Participantes: ${participantes}`, y);
+    y = drawSection(doc, "PARTICIPANTES", participantes, y);
     y = drawSection(doc, "DESCRIPCIÓN", agenda || "—", y);
     y = drawSection(doc, "DESARROLLO DE ACTIVIDADES", desarrollo || "—", y);
     y = drawSection(doc, "ACUERDOS", buildAcuerdosText(data), y);
@@ -259,18 +310,17 @@ export function buildMinutePdfBuffer(data: MinutePdfInput): Promise<Buffer> {
       y = drawSection(doc, "OBSERVACIONES", observaciones, y);
     }
 
-    if (y > doc.page.height - MARGIN - 120) {
+    if (y > doc.page.height - MARGIN - 140) {
       doc.addPage();
       y = MARGIN;
     }
 
-    doc
-      .font("Helvetica")
-      .fontSize(BODY_FONT)
+    y += 16;
+    doc.fillColor(C_MUTED).font("Helvetica-Oblique").fontSize(FONT_BODY)
       .text(CLOSING, MARGIN, y, { width: CONTENT_W, align: "center" });
-    y += 28;
+    y += 36;
 
-    y = drawSignatures(doc, data.signatures, y);
+    drawSignatures(doc, signatureEntries, y);
 
     doc.end();
   });
