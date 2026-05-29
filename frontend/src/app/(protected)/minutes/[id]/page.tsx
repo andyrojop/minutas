@@ -17,6 +17,7 @@ import { getMeeting } from "@/actions/meetings";
 import { getMinute, startMinuteSigningAction, updateMinuteDraftAction } from "@/actions/minutes";
 import { listSignaturesByMinute } from "@/actions/signatures";
 import { listUsers } from "@/actions/users";
+import { ExportMinutePdfButton } from "@/components/minutes/export-minute-pdf-button";
 import { SignaturesGallery } from "@/components/signature/signatures-gallery";
 import { TopazSignatureForm } from "@/components/signature/topaz-signature-form";
 import { commitmentStatusLabel } from "@/lib/commitments";
@@ -129,38 +130,22 @@ export default async function MinuteEditorPage({ params, searchParams }: Props) 
           <span>/</span>
           <span className="text-foreground font-medium">Minuta</span>
         </div>
-        <div className="flex flex-wrap items-center gap-3">
-          <h1 className="text-2xl font-semibold tracking-tight">Minuta</h1>
-          <Badge variant="outline">{min.status}</Badge>
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="flex flex-wrap items-center gap-3">
+            <h1 className="text-2xl font-semibold tracking-tight">Minuta</h1>
+            <Badge variant="outline">{min.status}</Badge>
+          </div>
+          <ExportMinutePdfButton minuteId={id} />
         </div>
       </div>
 
-      {firmaJustStarted ? (
+      {firmaJustStarted && !signerOk ? (
         <div
           role="status"
-          className="border-success/30 bg-success/10 text-success-foreground rounded-xl border px-4 py-3 text-sm shadow-xs"
+          className="border-border bg-muted/40 text-muted-foreground rounded-xl border px-4 py-3 text-sm"
         >
-          <p className="font-medium">Firma iniciada</p>
-          <p className="text-muted-foreground mt-1 text-xs sm:text-sm">
-            {signerOk
-              ? "Usa «Registrar firma» más abajo (pad Topaz o SVG). El borrador quedó bloqueado."
-              : "Tu cuenta no puede registrar firmas. Entra con administrador o secretaría."}
-          </p>
+          Tu cuenta no puede registrar firmas en esta minuta.
         </div>
-      ) : null}
-
-      {min.status === "SIGNING" && !firmaJustStarted ? (
-        <Card className="border-border/70 shadow-none">
-          <CardHeader className="py-3">
-            <CardTitle className="text-sm font-medium">Documento en firma</CardTitle>
-            <CardDescription className="text-xs leading-relaxed">
-              El borrador está cerrado.{" "}
-              {signerOk
-                ? "Completa las firmas en la sección inferior."
-                : "Solo administración o secretaría registran firmas aquí."}
-            </CardDescription>
-          </CardHeader>
-        </Card>
       ) : null}
 
       {staff && min.status === "DRAFT" ? (
@@ -187,11 +172,8 @@ export default async function MinuteEditorPage({ params, searchParams }: Props) 
 
       {min.status === "SIGNING" && signerOk ? (
         <Card className="shadow-xs">
-          <CardHeader className="pb-2">
+          <CardHeader className="pb-3">
             <CardTitle className="text-base">Registrar firma</CardTitle>
-            <CardDescription className="text-xs leading-relaxed">
-              Pad Topaz (SigWeb) o pega un SVG. Las firmas confirmadas aparecen arriba.
-            </CardDescription>
           </CardHeader>
           <CardContent className="pt-0">
             <TopazSignatureForm minuteId={id} fieldClass={fieldClass} />

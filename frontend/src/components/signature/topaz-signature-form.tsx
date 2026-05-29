@@ -10,7 +10,6 @@ import { Label } from "@/components/ui/label";
 import {
   getTopazComPortName,
   getTopazComPortNumber,
-  getTopazTabletKind,
   resolveTopazSigWebScriptUrlForBrowser,
 } from "@/lib/env";
 import {
@@ -24,7 +23,6 @@ import {
 } from "@/lib/topaz-sigweb";
 import { cn } from "@/lib/utils";
 
-/** Superficie que SigWeb espera (nombre/id habituales en ejemplos Topaz). */
 const SIGWEB_CANVAS_ID = "cnv";
 
 type Props = {
@@ -32,22 +30,16 @@ type Props = {
   fieldClass: string;
 };
 
-/**
- * Firma con tablet Topaz vía SigWeb (servicio local).
- * Flujo: activar pad → firmar → capturar trazo → nombre del firmante → confirmar.
- */
 export function TopazSignatureForm({ minuteId, fieldClass }: Props) {
   const [svg, setSvg] = useState("");
   const [signerName, setSignerName] = useState("");
-  const [sigwebHint, setSigwebHint] = useState<string | null>(null);
-  const [pointCount, setPointCount] = useState<number | null>(null);
+  const [status, setStatus] = useState<string | null>(null);
   const [captureToast, setCaptureToast] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
   const scriptLoaded = useRef(false);
   const tabletTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const captureToastTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const scriptUrl = process.env.NEXT_PUBLIC_TOPAZ_SIGWEB_SCRIPT_URL?.trim();
-  const tabletKind = getTopazTabletKind();
   const comHint = getTopazComPortName() ?? `COM${getTopazComPortNumber()}`;
 
   const hasCapturedStroke = svg.trim().length > 0;
@@ -55,7 +47,6 @@ export function TopazSignatureForm({ minuteId, fieldClass }: Props) {
   const resetCapture = useCallback(() => {
     setSvg("");
     setSignerName("");
-    setPointCount(0);
   }, []);
 
   const stopTabletRefresh = useCallback(() => {
@@ -99,25 +90,36 @@ export function TopazSignatureForm({ minuteId, fieldClass }: Props) {
       scriptLoaded.current = true;
     };
     s.onerror = () =>
-      setSigwebHint(
-        "No se pudo cargar SigWebTablet.js. Comprueba NEXT_PUBLIC_TOPAZ_SIGWEB_SCRIPT_URL y que el archivo exista en public/.",
-      );
+      setStatus("No se pudo cargar SigWeb. Revisa la configuración del servicio Topaz.");
     document.body.appendChild(s);
   }, [scriptUrl]);
 
-  const refreshPointCount = useCallback(() => {
-    setPointCount(readTabletPointCount());
-  }, []);
+  const clearPad = useCallback(() => {
+    stopTabletRefresh();
+    const w = getSigWebWindow();
+    if (typeof w.ClearTablet === "function") {
+      try {
+        w.ClearTablet();
+      } catch {
+        /* ignore */
+      }
+    }
+    resetCapture();
+    const canvas = document.getElementById(SIGWEB_CANVAS_ID) as HTMLCanvasElement | null;
+    const ctx = canvas?.getContext("2d");
+    if (canvas && ctx) {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+    }
+    setStatus(null);
+    setCaptureToast(null);
+  }, [resetCapture, stopTabletRefresh]);
 
   const captureFromPad = useCallback(() => {
     const w = getSigWebWindow();
     const points = readTabletPointCount(w);
-    setPointCount(points);
 
     if (points === 0) {
-      setSigwebHint(
-        "No hay trazo en el pad (0 puntos). Pulsa «Activar pad», firma en el dispositivo hasta ver el trazo en el lienzo y captura de nuevo.",
-      );
+      setStatus("Firma en el pad y vuelve a capturar.");
       return;
     }
 
@@ -128,14 +130,12 @@ export function TopazSignatureForm({ minuteId, fieldClass }: Props) {
       if (captured) {
         setSvg(captured);
         setSignerName("");
-        setSigwebHint("Firma capturada. Escribe el nombre del firmante y pulsa «Confirmar firma».");
-        showCaptureToast("Trazo capturado correctamente.");
+        setStatus(null);
+        showCaptureToast("Firma capturada. Indica el nombre y guarda.");
         stopTabletRefresh();
         return;
       }
-      setSigwebHint(
-        "No se pudo exportar la firma. Mantén el trazo visible en el lienzo y captura de nuevo sin pulsar «Archivar pad» antes.",
-      );
+      setStatus("No se pudo capturar el trazo. Intenta de nuevo.");
     })();
   }, [showCaptureToast, stopTabletRefresh]);
 
@@ -143,24 +143,20 @@ export function TopazSignatureForm({ minuteId, fieldClass }: Props) {
     const w = getSigWebWindow();
     const canvas = document.getElementById(SIGWEB_CANVAS_ID) as HTMLCanvasElement | null;
     if (!canvas) {
-      setSigwebHint("No se encontró el canvas de firma. Recarga la página.");
+      setStatus("Recarga la página e intenta de nuevo.");
       return;
     }
     const ctx = canvas.getContext("2d");
     if (!ctx) {
-      setSigwebHint("El navegador no permite contexto 2D en el canvas.");
+      setStatus("El lienzo de firma no está disponible en este navegador.");
       return;
     }
     if (typeof w.SetTabletState !== "function") {
-      setSigwebHint(
-        "SigWeb no está cargado. Verifica NEXT_PUBLIC_TOPAZ_SIGWEB_SCRIPT_URL=/sigweb/SigWebTablet.js y que SigWeb esté instalado.",
-      );
+      setStatus("SigWeb no está disponible. Comprueba que el servicio Topaz esté instalado.");
       return;
     }
     if (!isSigWebServiceReachable(w)) {
-      setSigwebHint(
-        "No responde el servicio SigWeb (tablet.sigwebtablet.com:47289). Instala/reinicia SigWeb en Windows y comprueba el archivo hosts de Topaz.",
-      );
+      setStatus("El servicio SigWeb no responde. Instálalo o reinícialo en Windows.");
       return;
     }
 
@@ -169,59 +165,27 @@ export function TopazSignatureForm({ minuteId, fieldClass }: Props) {
     const link = linkSigWebTablet(w, ctx, tabletTimerRef.current);
     tabletTimerRef.current = link.refreshTimer;
 
-    const points = readTabletPointCount(w);
-    setPointCount(points);
-
     if (!link.refreshTimer || link.tabletState === 0) {
-      setSigwebHint(formatSigWebLinkFailure(link));
+      setStatus(formatSigWebLinkFailure(link));
       return;
     }
 
-    const linkHint =
+    setStatus(
       link.tabletKind === "hsb"
-        ? `Pad HSB activado (estado ${link.tabletState}, USB)`
-        : `Pad BSB activado en ${comHint} (SigWeb puerto ${link.serviceComPort ?? link.configuredComPort}, estado ${link.tabletState})`;
-    setSigwebHint(
-      `${linkHint}: firma en el dispositivo; el trazo debe verse en el lienzo. Luego «Capturar trazo».`,
+        ? "Pad activo. Firma en el dispositivo y pulsa Capturar."
+        : `Pad activo (${comHint}). Firma en el dispositivo y pulsa Capturar.`,
     );
   }, [comHint, resetCapture, stopTabletRefresh]);
-
-  const clearTabletOnly = useCallback(() => {
-    const w = getSigWebWindow();
-    if (typeof w.ClearTablet === "function") {
-      try {
-        w.ClearTablet();
-      } catch {
-        /* ignore */
-      }
-    }
-    resetCapture();
-    setSigwebHint(null);
-  }, [resetCapture]);
-
-  const archivePad = useCallback(() => {
-    stopTabletRefresh();
-    const w = getSigWebWindow();
-    if (typeof w.ClearTablet === "function") {
-      try {
-        w.ClearTablet();
-      } catch {
-        /* ignore */
-      }
-    }
-    resetCapture();
-    setSigwebHint("Pad archivado: listo para la siguiente firma en el dispositivo.");
-  }, [resetCapture, stopTabletRefresh]);
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!hasCapturedStroke) {
-      setSigwebHint("Primero captura el trazo desde el pad.");
+      setStatus("Captura el trazo antes de guardar.");
       return;
     }
     const name = signerName.trim();
     if (!name) {
-      setSigwebHint("Escribe el nombre de la persona que firmó.");
+      setStatus("Indica el nombre de quien firma.");
       return;
     }
 
@@ -233,158 +197,90 @@ export function TopazSignatureForm({ minuteId, fieldClass }: Props) {
     startTransition(async () => {
       try {
         await registerSignatureAction(formData);
-        resetCapture();
-        const canvas = document.getElementById(SIGWEB_CANVAS_ID) as HTMLCanvasElement | null;
-        const ctx = canvas?.getContext("2d");
-        if (canvas && ctx) {
-          ctx.clearRect(0, 0, canvas.width, canvas.height);
-        }
-        setSigwebHint("Firma registrada. Activa el pad de nuevo para la siguiente persona.");
+        clearPad();
+        setStatus("Firma guardada.");
       } catch (err) {
-        setSigwebHint(err instanceof Error ? err.message : "No se pudo registrar la firma.");
+        setStatus(err instanceof Error ? err.message : "No se pudo guardar la firma.");
       }
     });
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-3">
-      <details className="group border-border bg-muted/30 rounded-lg border text-xs">
-        <summary className="text-foreground cursor-pointer list-none px-3 py-2 font-medium marker:content-none [&::-webkit-details-marker]:hidden">
-          <span className="inline-flex items-center gap-2">
-            Configuración del pad (Topaz / SigWeb)
-            <span className="text-muted-foreground font-normal group-open:hidden">— mostrar</span>
-          </span>
-        </summary>
-        <div className="text-muted-foreground space-y-2 border-t px-3 py-2">
-          <p>
-            Modo: <strong className="text-foreground">{tabletKind.toUpperCase()}</strong> (
-            <code className="bg-background rounded px-1">NEXT_PUBLIC_TOPAZ_TABLET_KIND</code> o{" "}
-            <code className="bg-background rounded px-1">NEXT_PUBLIC_TOPAZ_MODEL</code>).
-          </p>
-          {tabletKind === "bsb" ? (
-            <p>
-              Puerto COM: <strong className="text-foreground">{comHint}</strong>.
-            </p>
-          ) : (
-            <p>Pad HSB: conexión USB (no requiere puerto COM).</p>
-          )}
-          <p className="text-foreground/90">
-            Flujo: activar pad → firmar → capturar trazo → nombre del firmante → confirmar.
-          </p>
+    <form onSubmit={handleSubmit} className="space-y-4">
+      {captureToast ? (
+        <div
+          role="status"
+          className="border-success/30 bg-success/10 text-success-foreground flex items-center gap-2 rounded-lg border px-3 py-2 text-sm"
+        >
+          <CheckCircle2 className="size-4 shrink-0" aria-hidden />
+          <span>{captureToast}</span>
         </div>
-      </details>
+      ) : null}
 
-      <div className="flex flex-wrap gap-2">
+      {scriptUrl ? (
+        <div className="border-border overflow-hidden rounded-xl border bg-white shadow-xs">
+          <canvas id={SIGWEB_CANVAS_ID} width="500" height="200" className="block max-w-full" />
+        </div>
+      ) : (
+        <p className="text-muted-foreground text-sm">
+          Falta configurar el pad de firma en el entorno de la aplicación.
+        </p>
+      )}
+
+      <div className="flex flex-wrap items-center gap-2">
         <button
           type="button"
           className={cn(buttonVariants({ variant: "secondary", size: "sm" }))}
           onClick={startTablet}
-          disabled={isPending}
+          disabled={isPending || !scriptUrl}
         >
-          Activar pad de firma
+          Iniciar pad
         </button>
         <button
           type="button"
-          className={cn(buttonVariants({ variant: "secondary", size: "sm" }))}
-          onClick={clearTabletOnly}
-          disabled={isPending}
+          className={cn(buttonVariants({ size: "sm" }))}
+          onClick={captureFromPad}
+          disabled={isPending || !scriptUrl}
         >
-          Limpiar borrador
+          Capturar
         </button>
         <button
           type="button"
           className={cn(buttonVariants({ variant: "ghost", size: "sm" }))}
-          onClick={refreshPointCount}
+          onClick={clearPad}
           disabled={isPending}
         >
-          Comprobar puntos
-        </button>
-        <button
-          type="button"
-          className={cn(buttonVariants({ variant: "outline", size: "sm" }))}
-          onClick={captureFromPad}
-          disabled={isPending}
-        >
-          Capturar trazo
-        </button>
-        <button
-          type="button"
-          className={cn(buttonVariants({ variant: "outline", size: "sm" }))}
-          onClick={archivePad}
-          disabled={isPending}
-        >
-          Archivar pad
+          Limpiar
         </button>
       </div>
 
-      {scriptUrl ? (
-        <div className="relative">
-          {captureToast ? (
-            <div
-              role="status"
-              aria-live="polite"
-              className="pointer-events-none absolute -top-3 right-3 z-10 flex items-center gap-2 rounded-md border border-green-200 bg-green-50 px-3 py-1.5 text-xs font-medium text-green-700 shadow-sm dark:border-green-900/60 dark:bg-green-950/80 dark:text-green-300"
-            >
-              <CheckCircle2 className="h-4 w-4" aria-hidden />
-              {captureToast}
-            </div>
-          ) : null}
-          <div className="border-muted-foreground/30 overflow-hidden rounded-lg border bg-white">
-            <canvas id={SIGWEB_CANVAS_ID} width="500" height="200" className="block max-w-full" />
-          </div>
-        </div>
-      ) : (
-        <p className="text-muted-foreground text-xs">
-          Define NEXT_PUBLIC_TOPAZ_SIGWEB_SCRIPT_URL para mostrar el lienzo conectado a SigWeb.
-        </p>
-      )}
-
-      {pointCount != null ? (
-        <p className="text-muted-foreground text-xs">
-          Puntos en SigWeb: <strong className="text-foreground">{pointCount}</strong>
-          {pointCount === 0 ? " — activa el pad y firma en el dispositivo." : ""}
+      {status ? (
+        <p role="status" className="text-muted-foreground text-sm">
+          {status}
         </p>
       ) : null}
 
-      {sigwebHint ? <p className="text-muted-foreground text-xs">{sigwebHint}</p> : null}
-
       {hasCapturedStroke ? (
-        <>
-          <div className="space-y-1">
-            <p className="text-muted-foreground text-xs font-medium">Vista previa capturada</p>
-            <div
-              className="border-border flex min-h-[100px] items-center justify-center overflow-auto rounded-lg border bg-white p-2 [&_svg]:max-h-[160px] [&_svg]:max-w-full"
-              dangerouslySetInnerHTML={{ __html: svg }}
-            />
-          </div>
-
+        <div className="border-border space-y-3 rounded-xl border p-4">
           <div className="space-y-2">
-            <Label htmlFor="signer_display_name">Nombre del firmante</Label>
+            <Label htmlFor="signer_display_name">Nombre</Label>
             <Input
               id="signer_display_name"
               name="signer_display_name"
               value={signerName}
               onChange={(e) => setSignerName(e.target.value)}
-              placeholder="Ej. Juan Pérez"
+              placeholder="Nombre completo"
               className={fieldClass}
               autoComplete="name"
               disabled={isPending}
               required
             />
-            <p className="text-muted-foreground text-xs">
-              Este nombre aparecerá en «Firmas registradas» junto al trazo.
-            </p>
           </div>
-
           <button type="submit" className={cn(buttonVariants())} disabled={isPending}>
-            {isPending ? "Guardando…" : "Confirmar firma"}
+            {isPending ? "Guardando…" : "Guardar firma"}
           </button>
-        </>
-      ) : (
-        <p className="text-muted-foreground text-xs">
-          Tras capturar el trazo podrás indicar el nombre y confirmar la firma.
-        </p>
-      )}
+        </div>
+      ) : null}
     </form>
   );
 }

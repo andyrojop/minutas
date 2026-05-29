@@ -4,6 +4,7 @@ import { getToken } from "next-auth/jwt";
 import { isInviteOnlyMode } from "@/lib/env";
 
 const PROTECTED_PREFIXES = [
+  "/api/minutes",
   "/dashboard",
   "/meetings",
   "/minutes",

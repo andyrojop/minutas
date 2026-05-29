@@ -8,36 +8,30 @@ import { cn } from "@/lib/utils";
 import { createClient } from "@/lib/supabase/client";
 import { humanizeSupabaseAuthError } from "@/lib/supabase-auth-errors";
 
+/* ── Icons ─────────────────────────────────────────────────── */
+
 function SpinnerIcon() {
   return (
-    <svg className="animate-spin" width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <circle cx="12" cy="12" r="10" stroke="rgba(255,255,255,0.25)" strokeWidth="3" />
+    <svg className="animate-spin" width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <circle cx="12" cy="12" r="10" stroke="rgba(255,255,255,0.35)" strokeWidth="3" />
       <path d="M12 2a10 10 0 0 1 10 10" stroke="white" strokeWidth="3" strokeLinecap="round" />
     </svg>
   );
 }
 
-function ArrowIcon() {
+function UserIcon() {
   return (
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      <path d="M5 12h14" /><path d="M12 5l7 7-7 7" />
-    </svg>
-  );
-}
-
-function MailIcon() {
-  return (
-    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      <rect x="2" y="4" width="20" height="16" rx="2" />
-      <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" />
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+      <circle cx="12" cy="7" r="4" />
     </svg>
   );
 }
 
 function LockIcon() {
   return (
-    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <rect x="3" y="11" width="18" height="11" rx="2" />
       <path d="M7 11V7a5 5 0 0 1 10 0v4" />
     </svg>
   );
@@ -45,7 +39,7 @@ function LockIcon() {
 
 function AlertIcon() {
   return (
-    <svg className="shrink-0 mt-px" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <svg className="mt-0.5 shrink-0" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
       <circle cx="12" cy="12" r="10" />
       <line x1="12" y1="8" x2="12" y2="12" />
       <line x1="12" y1="16" x2="12.01" y2="16" />
@@ -53,105 +47,144 @@ function AlertIcon() {
   );
 }
 
+function CheckIcon() {
+  return (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <polyline points="20 6 9 17 4 12" />
+    </svg>
+  );
+}
+
 function EyeIcon({ open }: { open: boolean }) {
   return open ? (
-    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
       <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
       <circle cx="12" cy="12" r="3" />
     </svg>
   ) : (
-    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
       <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24" />
       <line x1="1" y1="1" x2="23" y2="23" />
     </svg>
   );
 }
 
+function BrandLogo() {
+  return (
+    <svg width="28" height="28" viewBox="0 0 32 32" fill="none" aria-hidden="true">
+      <rect x="2" y="2" width="28" height="28" rx="8" fill="#000827" />
+      <path d="M9 16h14M9 11h10M9 21h7" stroke="white" strokeWidth="1.5" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+function RainbowPanel() {
+  return (
+    <div className="auth-rainbow-panel relative hidden items-center justify-center overflow-hidden lg:flex">
+      <div className="auth-rainbow-blob auth-rainbow-blob-1" aria-hidden="true" />
+      <div className="auth-rainbow-blob auth-rainbow-blob-2" aria-hidden="true" />
+      <div className="auth-rainbow-blob auth-rainbow-blob-3" aria-hidden="true" />
+      <div className="auth-rainbow-arc" aria-hidden="true" />
+
+      <div className="relative z-10 px-10 text-center">
+        <p className="text-sm font-medium tracking-[0.2em] text-white/70 uppercase">
+          Bienvenido
+        </p>
+        <h2 className="mt-3 text-3xl leading-tight font-bold text-white">
+          Organiza tus reuniones con claridad
+        </h2>
+        <p className="mt-4 text-sm leading-relaxed text-white/75">
+          Crea tu cuenta y empieza a gestionar minutas y compromisos en un solo lugar.
+        </p>
+      </div>
+    </div>
+  );
+}
+
+/* ── FormField ──────────────────────────────────────────────── */
+
 interface FormFieldProps {
   id: string;
   type: "email" | "password";
-  label: string;
+  placeholder: string;
   autoComplete?: string;
   value: string;
   onChange: (v: string) => void;
+  variant?: "outline" | "filled";
   minLength?: number;
 }
 
-function FormField({ id, type, label, autoComplete, value, onChange, minLength }: FormFieldProps) {
+function FormField({
+  id,
+  type,
+  placeholder,
+  autoComplete,
+  value,
+  onChange,
+  variant = "outline",
+  minLength,
+}: FormFieldProps) {
   const [focused, setFocused] = useState(false);
   const [showPwd, setShowPwd] = useState(false);
   const isPassword = type === "password";
 
   return (
-    <div>
-      <label
-        htmlFor={id}
-        className="block mb-2.5 font-semibold tracking-[0.11em] uppercase"
-        style={{
-          fontSize: "10px",
-          color: focused ? "oklch(0.72 0.14 250)" : "rgba(255,255,255,0.3)",
-          transition: "color 0.2s ease",
-        }}
-      >
-        {label}
-      </label>
-      <div className="relative">
-        <div
-          className="absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none"
-          style={{
-            color: focused ? "oklch(0.65 0.14 250)" : "rgba(255,255,255,0.2)",
-            transition: "color 0.2s ease",
-          }}
-        >
-          {isPassword ? <LockIcon /> : <MailIcon />}
-        </div>
-
-        <input
-          id={id}
-          type={isPassword && showPwd ? "text" : type}
-          autoComplete={autoComplete}
-          required
-          minLength={minLength}
-          value={value}
-          onChange={(e) => onChange(e.target.value)}
-          onFocus={() => setFocused(true)}
-          onBlur={() => setFocused(false)}
-          aria-label={label}
-          className="w-full rounded-xl text-sm outline-none"
-          style={{
-            height: "50px",
-            paddingLeft: "42px",
-            paddingRight: isPassword ? "48px" : "16px",
-            background: focused ? "rgba(255,255,255,0.07)" : "rgba(255,255,255,0.038)",
-            border: `1px solid ${focused ? "oklch(0.55 0.16 250 / 0.7)" : "rgba(255,255,255,0.09)"}`,
-            boxShadow: focused
-              ? "0 0 0 3.5px oklch(0.55 0.16 250 / 0.12), inset 0 1px 0 rgba(255,255,255,0.06)"
-              : "inset 0 1px 0 rgba(255,255,255,0.04)",
-            color: "rgba(255,255,255,0.9)",
-            caretColor: "oklch(0.7 0.14 250)",
-            transition: "background 0.2s ease, border-color 0.2s ease, box-shadow 0.25s ease",
-          }}
-        />
-
-        {isPassword && (
-          <button
-            type="button"
-            tabIndex={-1}
-            onClick={() => setShowPwd((v) => !v)}
-            className="absolute right-3.5 top-1/2 -translate-y-1/2"
-            style={{
-              color: focused ? "rgba(255,255,255,0.5)" : "rgba(255,255,255,0.22)",
-              transition: "color 0.2s ease",
-            }}
-            aria-label={showPwd ? "Ocultar contraseña" : "Mostrar contraseña"}
-          >
-            <EyeIcon open={showPwd} />
-          </button>
+    <div className="relative">
+      <div
+        className={cn(
+          "pointer-events-none absolute top-1/2 left-4 -translate-y-1/2 transition-colors duration-200",
+          focused ? "text-[#00BCD4]" : "text-slate-400",
         )}
+      >
+        {isPassword ? <LockIcon /> : <UserIcon />}
       </div>
+      <input
+        id={id}
+        type={isPassword && showPwd ? "text" : type}
+        autoComplete={autoComplete}
+        required
+        minLength={minLength}
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        onFocus={() => setFocused(true)}
+        onBlur={() => setFocused(false)}
+        placeholder={placeholder}
+        aria-label={placeholder}
+        className={cn(
+          "h-12 w-full rounded-xl pr-4 pl-12 text-sm text-slate-800 outline-none transition-all duration-200 placeholder:text-slate-400",
+          variant === "filled"
+            ? cn(
+                "border border-transparent bg-slate-100",
+                focused && "bg-white ring-2 ring-[#00BCD4]/25",
+              )
+            : cn(
+                "border bg-white",
+                focused
+                  ? "border-[#00BCD4] ring-4 ring-[#00BCD4]/12"
+                  : "border-slate-200 hover:border-slate-300",
+              ),
+          isPassword && "pr-12",
+        )}
+      />
+      {isPassword && (
+        <button
+          type="button"
+          tabIndex={-1}
+          onClick={() => setShowPwd((v) => !v)}
+          className={cn(
+            "absolute top-1/2 right-4 -translate-y-1/2 transition-colors duration-200",
+            focused ? "text-slate-500 hover:text-slate-700" : "text-slate-400 hover:text-slate-600",
+          )}
+          aria-label={showPwd ? "Ocultar contraseña" : "Mostrar contraseña"}
+        >
+          <EyeIcon open={showPwd} />
+        </button>
+      )}
     </div>
   );
 }
+
+/* ── RegisterForm ───────────────────────────────────────────── */
 
 export function RegisterForm() {
   const router = useRouter();
@@ -201,219 +234,131 @@ export function RegisterForm() {
     }
   }
 
-  const cardShell = {
-    background: "rgba(255,255,255,0.028)",
-    border: "1px solid rgba(255,255,255,0.09)",
-    boxShadow: "0 40px 70px rgba(0,0,0,0.55), inset 0 1px 0 rgba(255,255,255,0.07)",
-  };
-
-  const cardTopGlow = {
-    background: "radial-gradient(ellipse 130% 50% at 50% 0%, oklch(0.18 0.06 250 / 0.14) 0%, transparent 60%)",
-  };
-
   return (
-    <div className="auth-page fixed inset-0 flex overflow-hidden">
-
-      {/* ── Aurora panel (desktop) ───────────────────────────── */}
-      <div
-        className="hidden lg:block relative overflow-hidden shrink-0"
-        style={{ width: "42%", background: "#050511" }}
-      >
-        <div className="auth-blob auth-blob-1" />
-        <div className="auth-blob auth-blob-2" />
-        <div className="auth-blob auth-blob-3" />
-        <div
-          className="absolute inset-0"
-          style={{
-            backgroundImage: "radial-gradient(circle, rgba(255,255,255,0.04) 1px, transparent 1px)",
-            backgroundSize: "28px 28px",
-          }}
-        />
-        <div className="absolute inset-0 flex items-center justify-center">
-          <svg width="44" height="44" viewBox="0 0 44 44" fill="none" aria-hidden="true">
-            <rect x="1.5" y="1.5" width="41" height="41" rx="11" stroke="rgba(255,255,255,0.22)" strokeWidth="1.5" />
-            <path d="M12 22h20M12 15.5h14M12 28.5h10" stroke="rgba(255,255,255,0.22)" strokeWidth="1.5" strokeLinecap="round" />
-          </svg>
+    <div className="auth-page auth-page--light fixed inset-0 overflow-auto bg-white">
+      <header className="absolute top-0 right-0 left-0 z-10 px-8 py-6 lg:px-12">
+        <div className="flex items-center gap-3">
+          <BrandLogo />
+          <span className="text-base font-semibold tracking-tight text-[#000827]">Gestión de minutas</span>
         </div>
-      </div>
+      </header>
 
-      {/* ── Form panel ──────────────────────────────────────────── */}
-      <div
-        className="flex-1 flex items-center justify-center overflow-auto py-12 px-6"
-        style={{
-          background: "#0b0b18",
-          backgroundImage: "radial-gradient(ellipse 80% 55% at 50% 25%, oklch(0.16 0.07 250 / 0.4) 0%, transparent 70%)",
-        }}
-      >
+      <main className="flex min-h-full items-center justify-center px-6 py-24 lg:px-12">
         <div
-          className="w-full max-w-[360px]"
-          style={{ animation: "authFadeUp 0.65s cubic-bezier(0.16,1,0.3,1) both" }}
+          className="w-full max-w-5xl"
+          style={{ animation: "authFadeUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) both" }}
         >
-          {/* Mobile-only logo */}
-          <div className="lg:hidden mb-8 flex justify-center">
-            <svg width="32" height="32" viewBox="0 0 32 32" fill="none" aria-hidden="true">
-              <rect x="1.5" y="1.5" width="29" height="29" rx="8" stroke="rgba(255,255,255,0.35)" strokeWidth="1.25" />
-              <path d="M9 16h14M9 11h10M9 21h7" stroke="rgba(255,255,255,0.35)" strokeWidth="1.25" strokeLinecap="round" />
-            </svg>
-          </div>
-
-          {/* ── Success state ── */}
-          {info ? (
-            <div className="rounded-2xl overflow-hidden" style={cardShell}>
-              <div
-                style={{
-                  height: "1.5px",
-                  background: "linear-gradient(90deg, transparent 0%, oklch(0.58 0.18 250 / 0.85) 28%, oklch(0.52 0.22 265 / 0.85) 72%, transparent 100%)",
-                }}
-              />
-              <div className="px-8 pt-7 pb-8 flex flex-col items-center text-center gap-5" style={cardTopGlow}>
-                <div
-                  className="w-12 h-12 rounded-full flex items-center justify-center"
-                  style={{
-                    background: "oklch(0.55 0.16 250 / 0.14)",
-                    border: "1px solid oklch(0.55 0.16 250 / 0.35)",
-                  }}
-                >
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="oklch(0.75 0.14 250)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                    <polyline points="20 6 9 17 4 12" />
-                  </svg>
-                </div>
-                <p className="text-xs leading-relaxed" style={{ color: "rgba(255,255,255,0.42)" }}>
-                  {info}
-                </p>
-                <Link
-                  href="/login"
-                  className="text-xs text-white/30 hover:text-white/60 transition-colors duration-200"
-                >
-                  Ir a inicio de sesión
-                </Link>
-              </div>
-            </div>
-          ) : (
-            <>
-              {/* ── Glass card ── */}
-              <div className="rounded-2xl overflow-hidden" style={cardShell}>
-                {/* Top gradient accent line */}
-                <div
-                  style={{
-                    height: "1.5px",
-                    background: "linear-gradient(90deg, transparent 0%, oklch(0.58 0.18 250 / 0.85) 28%, oklch(0.52 0.22 265 / 0.85) 72%, transparent 100%)",
-                  }}
-                />
-
-                {/* Inner content */}
-                <div className="px-8 pt-7 pb-8" style={cardTopGlow}>
-                  {/* Heading */}
-                  <div className="mb-7">
-                    <h1
-                      className="text-[22px] font-semibold leading-tight"
-                      style={{ color: "rgba(255,255,255,0.92)", letterSpacing: "-0.01em" }}
+          <div className="overflow-hidden rounded-3xl border border-slate-100 bg-white shadow-[0_24px_80px_rgba(15,23,42,0.08)] lg:grid lg:grid-cols-2">
+            <div className="flex flex-col justify-center px-8 py-12 sm:px-12 lg:px-14 lg:py-16">
+              <div className="mx-auto w-full max-w-sm">
+                {info ? (
+                  <div
+                    className="flex flex-col items-center gap-5 py-4 text-center"
+                    style={{ animation: "authFadeUp 0.35s cubic-bezier(0.16, 1, 0.3, 1) both" }}
+                  >
+                    <div className="flex h-14 w-14 items-center justify-center rounded-full bg-[#00BCD4]/10 text-[#00BCD4] ring-1 ring-[#00BCD4]/30">
+                      <CheckIcon />
+                    </div>
+                    <div>
+                      <h1 className="text-xl font-bold text-[#000827]">¡Cuenta creada!</h1>
+                      <p className="mt-2 text-sm leading-relaxed text-slate-500">{info}</p>
+                    </div>
+                    <Link
+                      href="/login"
+                      className="text-sm font-medium text-[#00BCD4] underline decoration-[#00BCD4]/40 underline-offset-2 transition-colors hover:text-[#0097A7]"
                     >
+                      Ir a inicio de sesión
+                    </Link>
+                  </div>
+                ) : (
+                  <>
+                    <h1 className="mb-2 text-center text-2xl font-bold tracking-tight text-[#000827]">
                       Crear cuenta
                     </h1>
-                    <p className="mt-1.5 text-xs leading-relaxed" style={{ color: "rgba(255,255,255,0.38)" }}>
+                    <p className="mb-8 text-center text-sm text-slate-500">
                       Completa los campos para registrarte en la plataforma.
                     </p>
-                  </div>
 
-                  <form onSubmit={onSubmit}>
-                    <div className="space-y-4">
+                    <form onSubmit={onSubmit} className="space-y-4">
                       <FormField
                         id="reg-email"
                         type="email"
-                        label="Correo electrónico"
+                        placeholder="Correo electrónico"
                         autoComplete="email"
                         value={email}
                         onChange={setEmail}
+                        variant="outline"
                       />
                       <FormField
                         id="reg-password"
                         type="password"
-                        label="Contraseña"
+                        placeholder="Contraseña"
                         autoComplete="new-password"
                         value={password}
                         onChange={setPassword}
+                        variant="filled"
                         minLength={6}
                       />
                       <FormField
                         id="reg-password2"
                         type="password"
-                        label="Repetir contraseña"
+                        placeholder="Repetir contraseña"
                         autoComplete="new-password"
                         value={password2}
                         onChange={setPassword2}
+                        variant="filled"
                         minLength={6}
                       />
-                    </div>
 
-                    {error && (
-                      <div
-                        key={errorKey}
-                        className="mt-4 flex items-start gap-2.5 rounded-xl px-4 py-3 text-xs leading-relaxed"
-                        style={{
-                          animation: "authShake 0.4s ease",
-                          background: "oklch(0.72 0.18 25 / 0.08)",
-                          border: "1px solid oklch(0.72 0.18 25 / 0.22)",
-                          color: "oklch(0.78 0.15 25)",
-                        }}
-                      >
-                        <AlertIcon />
-                        <span>{error}</span>
-                      </div>
-                    )}
+                      {error && (
+                        <div
+                          key={errorKey}
+                          className="flex items-start gap-2.5 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-xs leading-relaxed text-red-700"
+                          style={{ animation: "authShake 0.4s ease" }}
+                        >
+                          <AlertIcon />
+                          <span>{error}</span>
+                        </div>
+                      )}
 
-                    <div
-                      className="mt-7 pt-5"
-                      style={{ borderTop: "1px solid rgba(255,255,255,0.06)" }}
-                    >
                       <button
                         type="submit"
                         disabled={loading}
                         className={cn(
-                          "w-full h-[50px] rounded-xl text-sm font-semibold text-white",
-                          "flex items-center justify-center gap-2.5",
-                          "transition-all duration-200 active:scale-[0.98]",
-                          loading
-                            ? "opacity-55 cursor-not-allowed"
-                            : "hover:brightness-110 hover:shadow-[0_8px_32px_rgba(58,110,214,0.45)]",
+                          "mt-2 flex h-12 w-full items-center justify-center gap-2 rounded-xl text-sm font-semibold text-white transition-all duration-200",
+                          "bg-[#000827] hover:bg-[#0a1535] active:scale-[0.98]",
+                          loading && "cursor-not-allowed opacity-60",
                         )}
-                        style={{
-                          background: "linear-gradient(135deg, oklch(0.56 0.18 248) 0%, oklch(0.49 0.22 265) 100%)",
-                          letterSpacing: "0.04em",
-                        }}
                       >
                         {loading ? (
                           <>
                             <SpinnerIcon />
-                            <span>Creando cuenta</span>
+                            <span>Creando cuenta…</span>
                           </>
                         ) : (
-                          <>
-                            <span>Registrarse</span>
-                            <ArrowIcon />
-                          </>
+                          <span>Registrarse</span>
                         )}
                       </button>
-                    </div>
-                  </form>
-                </div>
-              </div>
+                    </form>
 
-              <p
-                className="mt-6 text-center text-xs"
-                style={{ animation: "authFadeUp 0.5s cubic-bezier(0.16,1,0.3,1) both 180ms" }}
-              >
-                <Link
-                  href="/login"
-                  className="text-white/30 hover:text-white/60 transition-colors duration-200"
-                >
-                  Iniciar sesión
-                </Link>
-              </p>
-            </>
-          )}
+                    <p className="mt-8 text-center text-sm text-slate-500">
+                      ¿Ya tienes cuenta?{" "}
+                      <Link
+                        href="/login"
+                        className="font-medium text-[#00BCD4] underline decoration-[#00BCD4]/40 underline-offset-2 transition-colors hover:text-[#0097A7] hover:decoration-[#0097A7]"
+                      >
+                        Inicia sesión
+                      </Link>
+                    </p>
+                  </>
+                )}
+              </div>
+            </div>
+
+            <RainbowPanel />
+          </div>
         </div>
-      </div>
+      </main>
     </div>
   );
 }

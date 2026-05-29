@@ -48,7 +48,7 @@ export default async function MeetingDetailPage({ params, searchParams }: Props)
     minuteRows = [];
   }
 
-  let attendees = await listMeetingAttendees(id).catch(() => []);
+  const attendees = await listMeetingAttendees(id).catch(() => []);
 
   let usersList: UserRow[] = [];
   if (staff) {

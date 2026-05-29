@@ -1,10 +1,4 @@
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import type { SignatureRow } from "@/types/database";
 
 type Props = {
@@ -21,9 +15,8 @@ export function SignaturesGallery({ signatures }: Props) {
   if (signatures.length === 0) {
     return (
       <Card>
-        <CardHeader>
-          <CardTitle className="text-base">Firmas registradas</CardTitle>
-          <CardDescription>Aún no hay firmas guardadas para esta minuta.</CardDescription>
+        <CardHeader className="pb-3">
+          <CardTitle className="text-base">Firmas</CardTitle>
         </CardHeader>
       </Card>
     );
@@ -31,11 +24,8 @@ export function SignaturesGallery({ signatures }: Props) {
 
   return (
     <Card>
-      <CardHeader>
-        <CardTitle className="text-base">Firmas registradas</CardTitle>
-        <CardDescription>
-          {signatures.length} {signatures.length === 1 ? "firma" : "firmas"} en orden cronológico.
-        </CardDescription>
+      <CardHeader className="pb-3">
+        <CardTitle className="text-base">Firmas</CardTitle>
       </CardHeader>
       <CardContent>
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
